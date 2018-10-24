@@ -35,15 +35,19 @@ int getIndex(char* kmer){
 //takes comnd line arg K (k-mer)
 int main(int argc,char* argv){
 
-    int K;
-    if(argc < 2){
+    int K,N;
+    if(argc < 3){
         printf("Argument K missing !!\n");
         exit(0);
     }
 
     K = atoi(argv[1]);
-    int size = (int)pow(4,K);       //all possible k-mers 
+    N = atoi(argv[2]);
+    int size = N*sizeof(unsigned long int)*2;       //number k -mers
 
+    //*****updated till here only****
+    
+    
     //array that stores if the node is valid or not i.e present or not
     bool* h_node = (bool*)malloc(sizeof(bool)*size);
 
