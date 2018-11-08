@@ -111,11 +111,12 @@ Pair genPair(char* kmer){
 //takes comnd line arg K (k-mer)
 int main(int argc,char* argv){
 
-    int K;
-    if(argc < 2){
+    int K,N;
+    if(argc < 3){
         printf("Argument K missing !!\n");
         exit(0);
     }
+
 
     K = atoi(argv[1]); 
     unsigned int N = 100;       //taking it as given
