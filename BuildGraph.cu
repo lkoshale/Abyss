@@ -6,7 +6,6 @@
 #include <stdbool.h>
 
 
-
 // map gnome seq to graph
 // read k-mer from file
 
@@ -20,10 +19,87 @@
 
 */
 
-int getIndex(char* kmer){
-    int ans = 0;
-    for(int i=0;i<strlen(kmer);i++){
+typedef struct Pair_{
+    unsigned long a;
+    unsigned long b;
+    unsigned long c;
+    unsigned long d;
+} Pair;
 
+
+
+Pair genPair(char* kmer){
+    Pair ans;
+    ans.a =0;ans.b=0;
+    ans.c=0;ans.d=0;
+    
+    int count = 0;
+    int index = strlen(kmer) -1;
+    unsigned long shiftop = 1; 
+    for( ;count<32 && index>=0;index--){
+        switch(kmer[i]){
+            case 'A': ans.a+=shiftop*0;    
+                    break;
+            case 'T': ans.a+=shiftop*1;
+                    break;
+            case 'G': ans.a+=shiftop*2;
+                    break;
+            case 'C': ans.a+=shiftop*3;
+                    break;
+        }
+        shiftop<<2;     //multiply by 4
+        count++;
+    }
+
+    shiftop = 1;
+    count = 0;
+    for( ;count<32 && index>=0;index--){
+        switch(kmer[i]){
+            case 'A': ans.b+=shiftop*0;    
+                    break;
+            case 'T': ans.b+=shiftop*1;
+                    break;
+            case 'G': ans.b+=shiftop*2;
+                    break;
+            case 'C': ans.b+=shiftop*3;
+                    break;
+        }
+        shiftop<<2;     //multiply by 4
+        count++;
+    }
+
+    shiftop = 1;
+    count = 0;
+    for( ;count<32 && index>=0;index--){
+        switch(kmer[i]){
+            case 'A': ans.c+=shiftop*0;    
+                    break;
+            case 'T': ans.c+=shiftop*1;
+                    break;
+            case 'G': ans.c+=shiftop*2;
+                    break;
+            case 'C': ans.c+=shiftop*3;
+                    break;
+        }
+        shiftop<<2;     //multiply by 4
+        count++;
+    }
+
+    shiftop = 1;
+    count = 0;
+    for( ;count<32 && index>=0;index--){
+        switch(kmer[i]){
+            case 'A': ans.d+=shiftop*0;    
+                    break;
+            case 'T': ans.d+=shiftop*1;
+                    break;
+            case 'G': ans.d+=shiftop*2;
+                    break;
+            case 'C': ans.d+=shiftop*3;
+                    break;
+        }
+        shiftop<<2;     //multiply by 4
+        count++;
     }
 
     return ans;
@@ -41,40 +117,57 @@ int main(int argc,char* argv){
         exit(0);
     }
 
-    K = atoi(argv[1]);
-    int size = (int)pow(4,K);       //all possible k-mers 
-
-    //array that stores if the node is valid or not i.e present or not
-    bool* h_node = (bool*)malloc(sizeof(bool)*size);
+    K = atoi(argv[1]); 
+    unsigned int N = 100;       //taking it as given
+    /********************
+    *   Data structure
+    *   Node representing a sequence => 4 64bit num
+    *   adjacency                    => 8 32bit num
+    *
+    *********************/
+    
 
     File* fptr = fopen("data.txt","r");
 
+    // Array containing Nodes each 4 digit represents one seq
+    unsigned long* Node = (unsigned long*)malloc(sizeof(unsigned long)*N*4);
+
+    // Array contain edges for each node as 8 per Node
+    unsigned int*  Edge = (unsigned int*) malloc(sizeof(unsigned int)*N*8);
+
+ 
     char buffer[100];
+    unsigned int Nindex = 0;
     while(fscanf(fptr,"%s\n",buffer)!=NULL){
         if(strlen(buffer)==K){
-            int idx = getIndex(buffer);
-            h_node[idx] = true;
+            Pair p = genPair(buffer);
+            Node[Nindex] = p.a;
+            Node[Nindex+1]=p.b;
+            Node[Nindex+2]=p.c;
+            Node[Nindex+3]=p.d;
+            Nindex+=4;
         }else{
-
+            // handel out of order strings
         }
-    }
 
-    // output of gpu kernel stored in it
-    //array of int* each 8 consecutive block belongs to a node
-    int* h_edge = (int*)malloc(sizeof(int)*size*8);
-    
+    }
+ 
     //****for gpu*******
 
-    int* d_edge;
-    cudaMalloc(&d_edge,size*8*sizeof(int));
-    bool* d_node;
-    cudaMalloc(&d_node,size*sizeof(int));
+    unsigned long* DNode;
+    unsigned long DNsize = sizeof(unsigned long)*N*4;
+    
+    unsigned int* DEdge;
+    unsigned long DEsize = sizeof(unsigned int)*N*8;
+    
+    cudaMalloc(&DNode,DNsize);
+    cudaMalloc(&DEdge,DEsize);
 
     //copy node array to gpu
-    cudaMemcpy(d_node,h_node,size*sizeof(int),cudaMemcpyHostToDevice);
+    cudaMemcpy(DNode,Node,DNsize,cudaMemcpyHostToDevice);
 
     //set all val to -1 
-    cudaMemset(d_edge,-1,size*8*sizeof(int));
+    cudaMemset(DEdge,-1,DEsize);
 
     //invoke kernel
 
@@ -89,13 +182,6 @@ int main(int argc,char* argv){
     //TODO
     // Traverse the graph and build the assembly
     
-
-
-
-    
-    
-    
-
 
 
 }
