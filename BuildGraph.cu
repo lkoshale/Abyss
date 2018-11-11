@@ -29,82 +29,159 @@ typedef struct Pair_{
 
 
 Pair genPair(char* kmer){
-    Pair ans;
-    ans.a =0;ans.b=0;
-    ans.c=0;ans.d=0;
-    
-    int count = 0;
-    int index = strlen(kmer) -1;
-    unsigned long shiftop = 1; 
-    for( ;count<32 && index>=0;index--){
-        switch(kmer[i]){
-            case 'A': ans.a+=shiftop*0;    
-                    break;
-            case 'T': ans.a+=shiftop*1;
-                    break;
-            case 'G': ans.a+=shiftop*2;
-                    break;
-            case 'C': ans.a+=shiftop*3;
-                    break;
-        }
-        shiftop<<2;     //multiply by 4
-        count++;
-    }
+	Pair ans;
+	ans.a =0;ans.b=0;
+	ans.c=0;ans.d=0;
+	
+	int count = 0;
+	int index = strlen(kmer) -1;
+	unsigned long shiftop = 1; 
+	for( ;count<32 && index>=0;index--){
+		switch(kmer[index]){
+			case 'A': ans.d+=shiftop*0;    
+					break;
+			case 'T': ans.d+=shiftop*1;
+					break;
+			case 'G': ans.d+=shiftop*2;
+					break;
+			case 'C': ans.d+=shiftop*3;
+					break;
+		}
+		shiftop=shiftop<<2;     //multiply by 4
+		//  printf("%lu \n",shiftop);
+		count++;
+	}
 
-    shiftop = 1;
-    count = 0;
-    for( ;count<32 && index>=0;index--){
-        switch(kmer[i]){
-            case 'A': ans.b+=shiftop*0;    
-                    break;
-            case 'T': ans.b+=shiftop*1;
-                    break;
-            case 'G': ans.b+=shiftop*2;
-                    break;
-            case 'C': ans.b+=shiftop*3;
-                    break;
-        }
-        shiftop<<2;     //multiply by 4
-        count++;
-    }
+	shiftop = 1;
+	count = 0;
+	for( ;count<32 && index>=0;index--){
+		switch(kmer[index]){
+			case 'A': ans.c+=shiftop*0;    
+					break;
+			case 'T': ans.c+=shiftop*1;
+					break;
+			case 'G': ans.c+=shiftop*2;
+					break;
+			case 'C': ans.c+=shiftop*3;
+					break;
+		}
+		shiftop=shiftop<<2;       //multiply by 4
+		count++;
+	}
 
-    shiftop = 1;
-    count = 0;
-    for( ;count<32 && index>=0;index--){
-        switch(kmer[i]){
-            case 'A': ans.c+=shiftop*0;    
-                    break;
-            case 'T': ans.c+=shiftop*1;
-                    break;
-            case 'G': ans.c+=shiftop*2;
-                    break;
-            case 'C': ans.c+=shiftop*3;
-                    break;
-        }
-        shiftop<<2;     //multiply by 4
-        count++;
-    }
+	shiftop = 1;
+	count = 0;
+	for( ;count<32 && index>=0;index--){
+		switch(kmer[index]){
+			case 'A': ans.b+=shiftop*0;    
+					break;
+			case 'T': ans.b+=shiftop*1;
+					break;
+			case 'G': ans.b+=shiftop*2;
+					break;
+			case 'C': ans.b+=shiftop*3;
+					break;
+		}
+		shiftop=shiftop<<2;       //multiply by 4
+		count++;
+	}
 
-    shiftop = 1;
-    count = 0;
-    for( ;count<32 && index>=0;index--){
-        switch(kmer[i]){
-            case 'A': ans.d+=shiftop*0;    
+	shiftop = 1;
+	count = 0;
+	for( ;count<32 && index>=0;index--){
+		switch(kmer[index]){
+			case 'A': ans.a+=shiftop*0;    
+					break;
+			case 'T': ans.a+=shiftop*1;
+					break;
+			case 'G': ans.a+=shiftop*2;
                     break;
-            case 'T': ans.d+=shiftop*1;
-                    break;
-            case 'G': ans.d+=shiftop*2;
-                    break;
-            case 'C': ans.d+=shiftop*3;
-                    break;
-        }
-        shiftop<<2;     //multiply by 4
-        count++;
-    }
+			case 'C': ans.a+=shiftop*3;
+					break;
+		}
+		shiftop=shiftop<<2;      //multiply by 4
+		count++;
+	}
 
-    return ans;
+	return ans;
 }
+    
 
+
+
+
+__global__ void buildGraph(unsigned long* Node, unsigned int* Edge, unsigned int N,int SA,int SB,int SC,int SD){
+    unsigned int idx = blockDim.x * blockIdx.x + threadIdx.x;
+    if(idx < N){
+        unsigned int k = 4*idx;
+        unsigned long a = Node[k]; 
+        unsigned long b = Node[k+1]
+        unsigned long c = Node[k+2];
+        unsigned long d = Node[k+3];
+
+        unsigned int e = 8*idx;
+
+        unsigned long end = 3;
+        unsigned long start = end<<62;
+
+        //at begining
+        for(unsigned long i=0;i<4;i++){
+            //add last base of C to first of D
+            //atleast size of 1 base 2 bits
+            unsigned long a1,b1,c1,d1;
+            a1=b1=c1=d1=0;
+
+            if(SD>1 && SC>1)
+                d1 = (d>>2) | ( (c & end)<<(SD-2));
+            if(SC>1 && SB>1)
+                c1= (c>>2) | ( (b & end)<<(SC-2));
+            if(SB>1 && SA>1)
+                b1 = (b>>2) | ( (a & end)<<(SB-2))
+            
+            //Add here diff bases
+            if(SA>1)
+                a1 = (a>>2) | (i<<(SA-2));
+            else if(SB>1)
+                b1 = (b>>2) | (i<<(SB-2));
+            else if(SC>1)
+                c1 = (c>>2) | (i<<(SC-2));
+            else if(SD>1)
+                d1 = (d>>2) | (i<<(SD-2));
+
+            //search for a1,b1,c1,d1
+
+        }
+
+        //at end
+        for(unsigned long i=0;i<4;i++){
+            unsigned long a1,b1,c1,d1;
+            a1=b1=c1=d1=0;
+            unsigned long lim = 1;
+            
+            if(SA>1)
+                a1 = (a<<2) | ( (b & start)>>62 );
+            if(SB>1)
+                b1 = (b<<2) | ( (c & start)>>62 );
+            if(SC>1)
+                c1 = (c<<2) | ( (d & start)>>62 );
+            if(SD>1)
+                d1 = (d<<2)| i ;
+            
+            //removing additional bits if not full limit
+            if(SA>1 && SA<64)
+                a1 = a1 & ((lim<<SA)-1);
+            if(SA>1 && SA<64)
+                b1 = b1 & ((lim<<SB)-1);
+            if(SA>1 && SA<64)
+                c1 = c1 & ((lim<<SC)-1);
+            if(SA>1 && SA<64)
+                d1 = d1 & ((lim<<SD)-1);
+
+            //search now
+        }
+    } 
+}
+ 
 
 // each k-mer starts at 1,8,16,... mapping  array for edges
 
@@ -171,6 +248,11 @@ int main(int argc,char* argv){
     cudaMemset(DEdge,-1,DEsize);
 
     //invoke kernel
+
+    int numThreads = 1024;
+    int numBlocks = (N+numThreads-1)/numThreads;
+
+
 
     //end kernel
 
