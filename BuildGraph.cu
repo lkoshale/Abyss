@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <cuda.h>
-#include <stdlib.h>
+#include <stdlib.h> 
 #include <string.h>
 #include <math.h>
 #include <stdbool.h>
