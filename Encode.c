@@ -4,7 +4,6 @@
 #include <limits.h>
 
 
-
 //order d c b a
 
 typedef struct Pair_{
