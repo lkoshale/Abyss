@@ -11,7 +11,7 @@
 using namespace std;
 
 int main(){
-    FILE* fptr = fopen("fasta.txt","r");
+    
     string genome="";
     set<string>Read;
 
