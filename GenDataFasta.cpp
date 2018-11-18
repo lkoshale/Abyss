@@ -22,7 +22,7 @@ int main(){
         genome+=line;
     }
 
-    for(int i=0;i+K<=genome.size();i+=K){
+    for(int i=0;i+K<genome.size();i++){
         string temp = genome.substr(i,K);
         Read.insert(temp);
     }
