@@ -324,7 +324,7 @@ int main( ){
      	//printf("Edges(%u): %u\t %u\n",i,E);
      	//printf("\n");
     // } 
-    printf("%lu",Node[6*4+3]);
+    //printf("%lu",Node[6*4+3]);
     //https://www.geeksforgeeks.org/hierholzers-algorithm-directed-graph/
 	fclose(fp);
 
