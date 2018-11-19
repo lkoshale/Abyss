@@ -65,7 +65,8 @@ set<unsigned int> Removed;
 int SA,SB,SC,SD;
 
 void add_all_edges(unsigned int* Edge,Vertex* v,int i,int N);
-void rec_merge(unsigned int* Edge,unsigned long* Node,int N,Vertex* v,int id);
+void rec_merge(unsigned int* Edge,unsigned long* Node,int N,Vertex* v,int id,int KS);
+string getDNA(unsigned long* Node,int id,int N);
 
 
 Pair genPair(char* kmer){
@@ -253,7 +254,7 @@ int main( ){
 	
 	int K=5;
 
-	FILE* fp = fopen("pra1","r");
+	FILE* fp = fopen("ReadsData.txt","r");
 
 	if(fp==NULL){
 		printf("couldn't open file inp ");
@@ -350,21 +351,51 @@ int main( ){
 
 		//only single outgoing edge
 		
-		rec_merge(Edge,Node,N,v,i);
+		rec_merge(Edge,Node,N,v,i,K);
 		
 	}
 	//generate contigs
 
-
+	for(auto it=Graph.begin();it!=Graph.end();it++){
+		cout<<"\n"<<it->second->contig<<"\n";
+	}
 
 	return 0;
+
 }
 
 
-void rec_merge(unsigned int* Edge,unsigned long* Node,int N,Vertex* v,int id){
+void rec_merge(unsigned int* Edge,unsigned long* Node,int N,Vertex* v,int id,int KS){
 	
-	//if id present in removed =>
-	// already added in some string goto parent get string an add it from graph and return
+	set<unsigned int>::iterator sit;
+	sit=Removed.find(id);
+	if(sit!=Removed.end()){
+		unsigned int parent;
+		for(int j=0;j<4;j++){
+			if(Edge[8*id+j]!=UINT_MAX){
+				parent=Edge[8*id+j];
+				break;
+			}
+		}
+		unordered_map<unsigned int,Vertex*>::iterator itr;
+		itr=Graph.find(parent);
+		if(itr!=Graph.end()){
+			//add all nodes to vertex
+			for(int k=0;k<(itr->second)->Edges.size();k++){
+				v->addEdge(itr->second->Edges[k]);
+			}
+			
+			cout<<v->contig<<" "<<itr->second->contig <<" here\n";
+
+			v->contig+=itr->second->contig.substr(KS);
+
+			Graph.erase(itr);
+			
+
+			return;
+		}
+
+	}
 	
 	int out=0;
 	unsigned int oid;
@@ -386,8 +417,15 @@ void rec_merge(unsigned int* Edge,unsigned long* Node,int N,Vertex* v,int id){
 		}
 
 		if(in==1){
+			cout<<v->contig<<"-";
 			//recurse
-			rec_merge(Edge,Node,N,v,oid);
+			if(v->contig.size()==0)
+				v->contig = getDNA(Node,id,N);
+			else
+				v->addContig(getDNA(Node,id,N));
+			
+			cout<<v->contig<<"\n";
+			rec_merge(Edge,Node,N,v,oid,KS);
 			Removed.insert(oid);
 			flag_merge=true;
 		}
@@ -395,7 +433,15 @@ void rec_merge(unsigned int* Edge,unsigned long* Node,int N,Vertex* v,int id){
 	}
 
 	if(flag_merge==false){	
-		//append the string
+		cout<<v->contig<<"-";
+
+		if(v->contig.size()==0)
+			v->contig = getDNA(Node,id,N);
+		else
+			v->addContig(getDNA(Node,id,N));
+		
+		cout<<v->contig<<"\n";
+
 		add_all_edges(Edge,v,id,N);	
 	}	
 
@@ -422,14 +468,14 @@ void add_all_edges(unsigned int* Edge,Vertex* v,int i,int N){
 	}
 }
 
-string getDNA(unsigned long* Node,int i,int N){
+string getDNA(unsigned long* Node,int id,int N){
 	string dna="";
 	unsigned long end = 3;
 	unsigned long a,b,c,d;
-	a=Node[4*i];
-	b=Node[4*i+1];
-	c=Node[4*i+2];
-	d=Node[4*i+3];	
+	a=Node[4*id];
+	b=Node[4*id+1];
+	c=Node[4*id+2];
+	d=Node[4*id+3];	
 	for(int i=0;i< SD;i+=2){
 		unsigned long temp = (d>>i) & end;
 		char ch='$';
