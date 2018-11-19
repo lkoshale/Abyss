@@ -17,82 +17,49 @@ typedef struct Pair_{
 
 
 Pair genPair(char* kmer){
-    Pair ans;
-    ans.a =0;ans.b=0;
-    ans.c=0;ans.d=0;
-    
-    int count = 0;
-    int index = strlen(kmer) -1;
-    unsigned long shiftop = 1; 
-    for( ;count<32 && index>=0;index--){
-        switch(kmer[index]){
-            case 'A': ans.d+=shiftop*0;    
-                    break;
-            case 'T': ans.d+=shiftop*1;
-                    break;
-            case 'G': ans.d+=shiftop*2;
-                    break;
-            case 'C': ans.d+=shiftop*3;
-                    break;
-        }
-        shiftop=shiftop<<2;     //multiply by 4
-      //  printf("%lu \n",shiftop);
-        count++;
-    }
+	Pair ans;
+	ans.a =0;ans.b=0;
+	ans.c=0;ans.d=0;
+	
+	unsigned long e;
+	int count = 0,i=0;
+	int index = strlen(kmer) -1;
+	//printf("%d\n",index);
+	unsigned long shiftop = 1; 
 
-    shiftop = 1;
-    count = 0;
-    for( ;count<32 && index>=0;index--){
-        switch(kmer[index]){
-            case 'A': ans.c+=shiftop*0;    
-                    break;
-            case 'T': ans.c+=shiftop*1;
-                    break;
-            case 'G': ans.c+=shiftop*2;
-                    break;
-            case 'C': ans.c+=shiftop*3;
-                    break;
-        }
-        shiftop=shiftop<<2;       //multiply by 4
-        count++;
-    }
+	//converting rightmost part of kmer into long and storing in d
+	for(i=0;i<4 && index>=0 ;i++){
+		shiftop =1;
+		count=0;
+		e=0;
+		for(;count<32 && index>=0;index--){
+			switch(kmer[index]){
+				case 'A': e+=shiftop*0;    
+						break;
+				case 'T': e+=shiftop*1;
+						break;
+				case 'G': e+=shiftop*2;
+						break;
+				case 'C': e+=shiftop*3;
+						break;
+			}
+			shiftop=shiftop<<2;     //multiply by 4
+			//  printf("%lu \n",shiftop);
+			count++;
+		}
 
-    shiftop = 1;
-    count = 0;
-    for( ;count<32 && index>=0;index--){
-        switch(kmer[index]){
-            case 'A': ans.b+=shiftop*0;    
-                    break;
-            case 'T': ans.b+=shiftop*1;
-                    break;
-            case 'G': ans.b+=shiftop*2;
-                    break;
-            case 'C': ans.b+=shiftop*3;
-                    break;
-        }
-        shiftop=shiftop<<2;       //multiply by 4
-        count++;
-    }
+		switch(i){
+			case 0: ans.d = e;break;
+			case 1: ans.c = e;break;
+			case 2: ans.b = e;break;
+			case 3: ans.a = e;break;
+		}
+	}
 
-    shiftop = 1;
-    count = 0;
-    for( ;count<32 && index>=0;index--){
-        switch(kmer[index]){
-            case 'A': ans.a+=shiftop*0;    
-                    break;
-            case 'T': ans.a+=shiftop*1;
-                    break;
-            case 'G': ans.a+=shiftop*2;
-                    break;
-            case 'C': ans.a+=shiftop*3;
-                    break;
-        }
-        shiftop=shiftop<<2;      //multiply by 4
-        count++;
-    }
-
-    return ans;
+	return ans;
 }
+
+
 
 char getBase(int val){
     char ch = '$';
@@ -143,7 +110,7 @@ char* getDNAstring(Pair p,int sa,int sb,int sc,int sd){
 
 int main(){
 
-    char buff[100]="AATC";
+    char buff[100]="CT";
     Pair p = genPair(buff);
 
     printf("%lu %lu %lu %lu\n",p.a,p.b,p.c,p.d);
@@ -156,7 +123,13 @@ int main(){
     // same as below expr
     unsigned long a1 = (p.d>>2) | ( (p.c & end)<<k) ;
     printf("%lu %lu %lu\n",start,end,a1);
-    
+
+     unsigned long lim = 1;
+     unsigned long i = 3;
+     unsigned long d1 = (p.d<<2)| i;
+     printf("%lu\n",d1);   
+     d1 = d1 & (  (lim<< (strlen(buff)*2))-1);
+     printf("%lu\n",d1);
    // Pair t; t.d=65; t.c=0;t.b=0;t.a=0;
   //  printf("%s\n",getDNAstring(p,0,0,0,4));
 
