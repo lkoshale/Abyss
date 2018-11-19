@@ -5,13 +5,13 @@
 #include<cstdlib>
 #include<cstdio>
 
-#define K 10
+#define K 5
 
 
 using namespace std;
 
 int main(){
-    FILE* fptr = fopen("fasta.txt","r");
+    
     string genome="";
     set<string>Read;
 
@@ -22,7 +22,7 @@ int main(){
         genome+=line;
     }
 
-    for(int i=0;i+K<genome.size();i++){
+    for(int i=0;i+K<=genome.size();i++){
         string temp = genome.substr(i,K);
         Read.insert(temp);
     }

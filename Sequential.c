@@ -4,7 +4,6 @@
 #include <math.h>
 #include <stdbool.h>
 
-
 // map gnome seq to graph
 // read k-mer from file
 
