@@ -1,7 +1,7 @@
 
 import random
-N = int(input())
-K = int(input())
+N = int(2)
+K = int(4)
 F = K//4
 
 base=""

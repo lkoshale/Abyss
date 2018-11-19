@@ -115,10 +115,11 @@ void buildGraph(unsigned long* Node, unsigned int* Edge, unsigned int N,int SA,i
                 d1 = (d>>2) | (i<<(SD-2));
 
 	            //search for a1,b1,c1,d1
-            if(idx==0||idx==1||idx==2) printf("idx:%u\t = a1:%lu\tb1:%lu\tc1:%lu\td1:%lu\n",idx+1 ,a1,b1,c1,d1);
-            unsigned int m,l,r;
+            //printf("idx:%u\t = a1:%lu\tb1:%lu\tc1:%lu\td1:%lu\n",idx+1 ,a1,b1,c1,d1);
+
+            int m,l,r;
             l=0;
-            r=N;
+            r=(int)N-1;
 		    while ( l <= r) 
 		    { 
 		        m = l + (r-l)/2; 
@@ -126,7 +127,7 @@ void buildGraph(unsigned long* Node, unsigned int* Edge, unsigned int N,int SA,i
 		        // Check if x is present at mid 
 		        if (Node[4*m] == a1  && Node[4*m+1] == b1  && Node[4*m+2] == c1  && Node[4*m+3] == d1 ){
 		        	Edge[8*idx+i]=m; 
-		        	if(idx==0||idx==1||idx==2)printf("%u->%u \n",idx+1,m +1);
+		        	//if(idx==0||idx==1||idx==2)printf("%u->%u \n",idx+1,m +1);
 		        	break;
 		        }
 		  		/*
@@ -159,7 +160,7 @@ void buildGraph(unsigned long* Node, unsigned int* Edge, unsigned int N,int SA,i
 		        
 		    } 
         }
-
+        if(idx==8)printf("%lu\n",d);
         //at end
         for(unsigned long i=0;i<4;i++){
             unsigned long a1,b1,c1,d1;
@@ -176,29 +177,32 @@ void buildGraph(unsigned long* Node, unsigned int* Edge, unsigned int N,int SA,i
                 d1 = (d<<2)| i ;
             
             //removing additional bits if not full limit
-            if(SA>1 && SA<64)
+            if(SB>1 && SA<64)
                 a1 = a1 & ((lim<<SA)-1);
-            if(SA>1 && SA<64)
+            if(SC>1 && SB<64)
                 b1 = b1 & ((lim<<SB)-1);
-            if(SA>1 && SA<64)
+            if(SD>1 && SC<64)
                 c1 = c1 & ((lim<<SC)-1);
-            if(SA>1 && SA<64)
+            if(SD<64)
                 d1 = d1 & ((lim<<SD)-1);
 
             //search now
-            if(idx==0||idx==1||idx==2) printf("idx:%u\t = a1:%lu\tb1:%lu\tc1:%lu\td1:%lu\n",idx+1 ,a1,b1,c1,d1);
-            unsigned int m,l,r;
+            //if(idx==0||idx==1||idx==2) printf("idx:%u\t = a1:%lu\tb1:%lu\tc1:%lu\td1:%lu\n",idx+1 ,a1,b1,c1,d1);
+            int m,l,r;
             l=0;
-            r=N-1;
+            r=(int)N-1;
+            if(idx==8) printf("idx:%u\t = a1:%lu\tb1:%lu\tc1:%lu\td1:%lu\n",idx+1 ,a1,b1,c1,d1);
 		    while ( l <= r) 
 		    { 
 		        m = l + (r-l)/2; 
+		        if(idx==8)printf(" %d ",m);
 		  
 		        // Check if x is present at mid 
 		        if (Node[4*m] == a1  && Node[4*m+1] == b1  && Node[4*m+2] == c1  && Node[4*m+3] == d1 ){
 		        	Edge[8*idx+4+i]=m; 
 		        	
-		        	if(idx==0||idx==1||idx==2)printf("%u->%u \n",idx+1,m+1 );
+		        	//if(idx==0||idx==1||idx==2)printf("%u->%u \n",idx+1,m+1 );
+		        	if(idx==8) printf("found\n");
 		        	break;
 		        }
 		  
@@ -228,7 +232,9 @@ void buildGraph(unsigned long* Node, unsigned int* Edge, unsigned int N,int SA,i
 		        	}
 		        }
 		  		
+
 		    }
+		    printf("\n");
             
         }
     } 
@@ -237,16 +243,16 @@ void buildGraph(unsigned long* Node, unsigned int* Edge, unsigned int N,int SA,i
 
 int main( ){
 	
-	int K=4;
+	int K=5;
 
-	FILE* fp = fopen("data1","r");
+	FILE* fp = fopen("pra1","r");
 
 	if(fp==NULL){
 		printf("couldn't open file inp ");
 		return 1;
 	}
 
-	int N=17;
+	int N=10;
 
 	
 	
@@ -265,7 +271,7 @@ int main( ){
     while(fscanf(fp,"%s\n",buffer)!=EOF){
         if(strlen(buffer)==K){
             Pair p = genPair(buffer);
-            printf(" %s: a = %lu\t b = %lu\t c = %lu\t d = %lu\n" ,buffer,p.a,p.b,p.c,p.d);
+            //printf(" %s: a = %lu\t b = %lu\t c = %lu\t d = %lu\n" ,buffer,p.a,p.b,p.c,p.d);
             Node[Nindex] = p.a;
             Node[Nindex+1]=p.b;
             Node[Nindex+2]=p.c;
@@ -276,7 +282,6 @@ int main( ){
         }
 
     }
-
     int A=0,B=0,C=0,D=0,l;
     l=2*K;
 
@@ -302,14 +307,16 @@ int main( ){
 
     //Check the Graph
     unsigned int i;
-    // for(i=0;i<N;i++){
+    //for(i=0;i<N;i++){
 
-    // 	printf("FrontEdges(%u):%u\t%u\t%u\t%u\n",i,Edge[8*i],Edge[8*i+1],Edge[8*i+2],Edge[8*i+3]);
-    // 	printf("BackEdges(%u):%u\t%u\t%u\t%u\n",i,Edge[8*i+4],Edge[8*i+5],Edge[8*i+6],Edge[8*i+7]);
+     	//printf("FrontEdges(%u):%u\t%u\t%u\t%u\n",i+1,Edge[8*i],Edge[8*i+1],Edge[8*i+2],Edge[8*i+3]);
+     	//printf("BackEdges(%u):%u\t%u\t%u\t%u\n",i+1,Edge[8*i+4],Edge[8*i+5],Edge[8*i+6],Edge[8*i+7]);
     	
-    // 	printf("\n");
+     	//printf("Edges(%u): %u\t %u\n",i,E);
+     	//printf("\n");
     // } 
-
+    printf("%lu",Node[6*4+3]);
+    //https://www.geeksforgeeks.org/hierholzers-algorithm-directed-graph/
 	fclose(fp);
 
 	return 0;
