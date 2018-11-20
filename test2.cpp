@@ -261,7 +261,7 @@ int main( ){
 		return 1;
 	}
 
-	int N=10;
+	int N=68;
 
 	
 	
@@ -355,9 +355,10 @@ int main( ){
 		
 	}
 	//generate contigs
-
+	 
 	for(auto it=Graph.begin();it!=Graph.end();it++){
-		cout<<"\n"<<it->second->contig<<"\n";
+		if(it->second->contig.size()!=0)
+			cout<<"contig: "<<it->second->contig<<"\n";
 	}
 
 	return 0;
@@ -385,7 +386,6 @@ void rec_merge(unsigned int* Edge,unsigned long* Node,int N,Vertex* v,int id,int
 				v->addEdge(itr->second->Edges[k]);
 			}
 			
-			cout<<v->contig<<" "<<itr->second->contig <<" here\n";
 
 			v->contig+=itr->second->contig.substr(KS);
 
@@ -417,14 +417,14 @@ void rec_merge(unsigned int* Edge,unsigned long* Node,int N,Vertex* v,int id,int
 		}
 
 		if(in==1){
-			cout<<v->contig<<"-";
+			// cout<<v->contig<<"-";
 			//recurse
 			if(v->contig.size()==0)
 				v->contig = getDNA(Node,id,N);
 			else
 				v->addContig(getDNA(Node,id,N));
 			
-			cout<<v->contig<<"\n";
+			// cout<<v->contig<<"\n";
 			rec_merge(Edge,Node,N,v,oid,KS);
 			Removed.insert(oid);
 			flag_merge=true;
@@ -433,14 +433,14 @@ void rec_merge(unsigned int* Edge,unsigned long* Node,int N,Vertex* v,int id,int
 	}
 
 	if(flag_merge==false){	
-		cout<<v->contig<<"-";
+		// cout<<v->contig<<"-";
 
 		if(v->contig.size()==0)
 			v->contig = getDNA(Node,id,N);
 		else
 			v->addContig(getDNA(Node,id,N));
 		
-		cout<<v->contig<<"\n";
+		// cout<<v->contig<<"\n";
 
 		add_all_edges(Edge,v,id,N);	
 	}	
