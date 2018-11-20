@@ -111,7 +111,7 @@ Pair genPair(char* kmer){
 	return ans;
 }
 
-void buildGraph(unsigned long* Node, unsigned int* Edge, unsigned int N,int SA,int SB,int SC,int SD){
+void buildGraph(unsigned long* Node,unsigned int* Edge,unsigned int N,int SA,int SB,int SC,int SD,unsigned int* start,unsigned int* end){
     //unsigned int idx = blockDim.x * blockIdx.x + threadIdx.x;
    
     for(unsigned int idx=0;idx<N;idx++){
@@ -181,7 +181,7 @@ void buildGraph(unsigned long* Node, unsigned int* Edge, unsigned int N,int SA,i
 		        
 		    } 
         }
-        if(idx==8)printf("%lu\n",d);
+       // if(idx==8)printf("%lu\n",d);
         //at end
         for(unsigned long i=0;i<4;i++){
             unsigned long a1,b1,c1,d1;
@@ -244,8 +244,11 @@ void buildGraph(unsigned long* Node, unsigned int* Edge, unsigned int N,int SA,i
 		  		
 
 		    }
-            
+		    
         }
+
+        if(Edge[i*8]==UINT_MAX && Edge[i*8+1]==UINT_MAX && Edge[i*8+2]==UINT_MAX && Edge[i*8+3]==UINT_MAX) *start = i;
+        if(Edge[i*8+4]==UINT_MAX && Edge[i*8+5]==UINT_MAX && Edge[i*8+6]==UINT_MAX && Edge[i*8+7]==UINT_MAX) *end = i;
     } 
 }
 
@@ -313,7 +316,11 @@ int main( ){
     printf("%d %d %d %d\n",A,B,C,D );
 	SA=A;SB=B;SC=C;SD=D;
     //Builing graph 
-    buildGraph(Node,Edge,N,A,B,C,D);
+
+	unsigned int* start = (unsigned int*)malloc(sizeof(unsigned int));
+	unsigned int* end = (unsigned int*)malloc(sizeof(unsigned int));
+
+    buildGraph(Node,Edge,N,A,B,C,D,start,end);
 
     //Check the Graph
     unsigned int i;
@@ -325,7 +332,7 @@ int main( ){
      	//printf("Edges(%u): %u\t %u\n",i,E);
      	//printf("\n");
     // } 
-    printf("%lu\n",Node[6*4+3]);
+    //printf("%lu",Node[6*4+3]);
     //https://www.geeksforgeeks.org/hierholzers-algorithm-directed-graph/
 	fclose(fp);
 
@@ -354,6 +361,24 @@ int main( ){
 		rec_merge(Edge,Node,N,v,i,K);
 		
 	}
+
+	unordered_map<unsigned int,Vertex*>::iterator it2;
+	it2=Graph.find(*start);
+	if(it2==Graph.end()){
+		cout<<"Error\n";
+		exit(0);
+	}
+	Vertex* st = it->second;
+	Vertex* en = NULL;
+	for(auto it=Graph.begin();it!=Graph.end();it++){
+		if(it->second->Edges.size()==0 && it->second->contigs.size()>0)
+			en=it->second;
+	}	
+	if(end==NULL)
+		cout<<"Error\n";
+
+
+	
 	//generate contigs
 	 
 	for(auto it=Graph.begin();it!=Graph.end();it++){
