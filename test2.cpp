@@ -10,6 +10,7 @@
 #include <string>
 #include <unordered_map>
 #include <set>
+#include <stack>
 
 using namespace std;
 // map gnome seq to graph
@@ -111,7 +112,7 @@ Pair genPair(char* kmer){
 	return ans;
 }
 
-void buildGraph(unsigned long* Node,unsigned int* Edge,unsigned int N,int SA,int SB,int SC,int SD,unsigned int* start,unsigned int* end){
+void buildGraph(unsigned long* Node,unsigned int* Edge,unsigned int N,int SA,int SB,int SC,int SD,unsigned int* stt,unsigned int* enn){
     //unsigned int idx = blockDim.x * blockIdx.x + threadIdx.x;
    
     for(unsigned int idx=0;idx<N;idx++){
@@ -212,18 +213,18 @@ void buildGraph(unsigned long* Node,unsigned int* Edge,unsigned int N,int SA,int
             int m,l,r;
             l=0;
             r=(int)N-1;
-            if(idx==8) printf("idx:%u\t = a1:%lu\tb1:%lu\tc1:%lu\td1:%lu\n",idx+1 ,a1,b1,c1,d1);
+           // if(idx==8) printf("idx:%u\t = a1:%lu\tb1:%lu\tc1:%lu\td1:%lu\n",idx+1 ,a1,b1,c1,d1);
 		    while ( l <= r) 
 		    { 
 		        m = l + (r-l)/2; 
-		        if(idx==8)printf(" %d ",m);
+		       // if(idx==8)printf(" %d ",m);
 		  
 		        // Check if x is present at mid 
 		        if (Node[4*m] == a1  && Node[4*m+1] == b1  && Node[4*m+2] == c1  && Node[4*m+3] == d1 ){
 		        	Edge[8*idx+4+i]=m; 
 		        	
 		        
-		        	if(idx==8) printf("found\n");
+		        //	if(idx==8) printf("found\n");
 		        	break;
 		        }
 		        else if(Node[4*m] >a1) r = m-1;
@@ -247,15 +248,15 @@ void buildGraph(unsigned long* Node,unsigned int* Edge,unsigned int N,int SA,int
 		    
         }
 
-        if(Edge[i*8]==UINT_MAX && Edge[i*8+1]==UINT_MAX && Edge[i*8+2]==UINT_MAX && Edge[i*8+3]==UINT_MAX) *start = i;
-        if(Edge[i*8+4]==UINT_MAX && Edge[i*8+5]==UINT_MAX && Edge[i*8+6]==UINT_MAX && Edge[i*8+7]==UINT_MAX) *end = i;
+        if(Edge[idx*8]==UINT_MAX && Edge[idx*8+1]==UINT_MAX && Edge[idx*8+2]==UINT_MAX && Edge[idx*8+3]==UINT_MAX) *stt = idx;
+        if(Edge[idx*8+4]==UINT_MAX && Edge[idx*8+5]==UINT_MAX && Edge[idx*8+6]==UINT_MAX && Edge[idx*8+7]==UINT_MAX) *enn = idx;
     } 
 }
 
 
 int main( ){
 	
-	int K=5;
+	int K=4;
 
 	FILE* fp = fopen("ReadsData.txt","r");
 
@@ -264,7 +265,7 @@ int main( ){
 		return 1;
 	}
 
-	int N=68;
+	int N=11;
 
 	
 	
@@ -324,13 +325,12 @@ int main( ){
 
     //Check the Graph
     unsigned int i;
-    //for(i=0;i<N;i++){
+    // for(i=0;i<N;i++){
 
-     	//printf("FrontEdges(%u):%u\t%u\t%u\t%u\n",i+1,Edge[8*i],Edge[8*i+1],Edge[8*i+2],Edge[8*i+3]);
-     	//printf("BackEdges(%u):%u\t%u\t%u\t%u\n",i+1,Edge[8*i+4],Edge[8*i+5],Edge[8*i+6],Edge[8*i+7]);
+    //  	printf("Backward(%u):%u\t%u\t%u\t%u\n",i+1,Edge[8*i],Edge[8*i+1],Edge[8*i+2],Edge[8*i+3]);
+    //  	printf("Forward(%u):%u\t%u\t%u\t%u\n",i+1,Edge[8*i+4],Edge[8*i+5],Edge[8*i+6],Edge[8*i+7]);
     	
-     	//printf("Edges(%u): %u\t %u\n",i,E);
-     	//printf("\n");
+    //  	printf("\n");
     // } 
     //printf("%lu",Node[6*4+3]);
     //https://www.geeksforgeeks.org/hierholzers-algorithm-directed-graph/
@@ -362,28 +362,82 @@ int main( ){
 		
 	}
 
+	for(auto sit=Removed.begin();sit!=Removed.end();sit++){
+		unordered_map<unsigned int,Vertex*>::iterator it;
+		it=Graph.find(*sit);
+		if(it!=Graph.end()){
+			Graph.erase(it);
+		}
+	}
+
+
+		//print graph
+	cout<<"Graph\n";
+	for(auto it=Graph.begin();it!=Graph.end();it++){
+		cout<<it->second->contig<<" :";
+		for(int j=0;j<it->second->Edges.size();j++){
+			cout<<it->second->Edges[j]->contig<<" , ";
+		}
+		cout<<"\n";
+	}	
+
+
+
 	unordered_map<unsigned int,Vertex*>::iterator it2;
 	it2=Graph.find(*start);
 	if(it2==Graph.end()){
 		cout<<"Error\n";
 		exit(0);
 	}
-	Vertex* st = it->second;
+	Vertex* st = it2->second;
 	Vertex* en = NULL;
 	for(auto it=Graph.begin();it!=Graph.end();it++){
-		if(it->second->Edges.size()==0 && it->second->contigs.size()>0)
+		if(it->second->Edges.size()==0 && it->second->contig.size()>0)
 			en=it->second;
 	}	
-	if(end==NULL)
+
+	if(en==NULL){
 		cout<<"Error\n";
-
-
-	
-	//generate contigs
+		exit(0);
+	}
 	 
-	for(auto it=Graph.begin();it!=Graph.end();it++){
-		if(it->second->contig.size()!=0)
-			cout<<"contig: "<<it->second->contig<<"\n";
+
+	if(Graph.size()==1){
+		for(auto it=Graph.begin();it!=Graph.end();it++){
+			cout<<it->second->contig<<"\n";
+			return 0;
+		}	
+	}
+
+	//find the path
+	//make dummy edge from end to start
+	en->addEdge(st);
+
+	//if more than one vertex
+	cout<<"start tarversing\n";
+	vector<Vertex*>path;
+	stack<Vertex*> curr_path;
+	Vertex* curr_v= st;
+	curr_path.push(st);
+
+	while(!curr_path.empty()){
+		if(curr_v->Edges.size()>0){
+			curr_path.push(curr_v);
+			Vertex* next_v = curr_v->Edges[curr_v->Edges.size()-1];
+			curr_v->Edges.pop_back();
+
+			curr_v=next_v;
+		}
+		else{
+			path.push_back(curr_v);
+			curr_v =  curr_path.top();
+			curr_path.pop();
+		}
+	}
+
+	cout<<"path\n";
+	for(int i=path.size()-1;i>=0;i--){
+		cout<<path[i]->contig<<"\n";
 	}
 
 	return 0;
@@ -410,13 +464,11 @@ void rec_merge(unsigned int* Edge,unsigned long* Node,int N,Vertex* v,int id,int
 			for(int k=0;k<(itr->second)->Edges.size();k++){
 				v->addEdge(itr->second->Edges[k]);
 			}
-			
 
 			v->contig+=itr->second->contig.substr(KS);
 
 			Graph.erase(itr);
 			
-
 			return;
 		}
 
@@ -465,7 +517,7 @@ void rec_merge(unsigned int* Edge,unsigned long* Node,int N,Vertex* v,int id,int
 		else
 			v->addContig(getDNA(Node,id,N));
 		
-		// cout<<v->contig<<"\n";
+	   // cout<<v->contig<<"\n";
 
 		add_all_edges(Edge,v,id,N);	
 	}	
@@ -483,10 +535,12 @@ void add_all_edges(unsigned int* Edge,Vertex* v,int i,int N){
 			itr = Graph.find(Edge[8*i+4+j]);
 			if(itr==Graph.end()){
 				temp = new Vertex;
-				Graph.insert(pair<unsigned int,Vertex*>(i,temp));
+				Graph.insert(pair<unsigned int,Vertex*>(Edge[8*i+4+j],temp));
+				
 			}
 			else{
 				temp = itr->second;
+				
 			}	
 			v->addEdge(temp);
 		}
