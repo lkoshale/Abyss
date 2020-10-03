@@ -8,6 +8,6 @@
     - get dna seq using graph 
 
 # To genrate Reads
- - to set K chnage the #define in <b>GenDataFasta.cpp<b>
+ - to set K, change the #define in <b>GenDataFasta.cpp<b>
  - compile g++ GenDataFasta.cpp -std=c++11
  - Run: ./a.out < inputfile >ouputfile
